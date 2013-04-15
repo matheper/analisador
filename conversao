@@ -1,0 +1,2 @@
+ALGORITMO -> algoritmo DECLARACOES inicio LINST FIMALGORITMO {ALGORITMO.cod = DECLARACOES.cod + " main(){" + LINST.cod + "}"}
+REPITA -> repita LINST ate EXP {REPITA.cod = "do {" + linst.cod + "} while(!(" + EXP.cod + "))"}
