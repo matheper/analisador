@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 #define TAM 1000
 
@@ -72,12 +73,12 @@ char token[TAM];
 int pos, codToken, linha=0;
 
 FILE *arquivoSaida, *arquivoEntrada, *algoritmoSaida;
-char s[TAM];
+char s[TAM], codigo[TAM];
 
-char *codigoC = NULL;
+char *codigoC = "";
 
 
-void concatCod(char *codigo);
+char *concatenaCodigo(char *format, ...);
 int lerLinha();
 void NomeToken(int cod, char* nome);
 int reconhecedor(char s[]);
@@ -1242,9 +1243,10 @@ int comando(){
         }
     }
     if (codToken == RETORNE){
-        concatCod("return ");
+        codigoC = concatenaCodigo("%s%s", codigoC, "return ");
         analisadorLexico();
         E0();
+        codigoC = concatenaCodigo("%s%s", codigoC,";\n");
         return 1;
     }
     return 0;
@@ -1281,28 +1283,29 @@ int analisadorSintatico()
     return 1;
 }
 
-void concatCod(char *codigo){
-    int n = snprintf( NULL, 0, "%s", codigo);
-    char *concat;
-    concat = (char*) realloc (codigoC, n);
-    if (concat!=NULL) {
-        codigoC=concat;
-        strcat(codigoC, codigo);
+char *concatenaCodigo(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int n = vsnprintf(NULL, 0, format, args) + 1;  /* Note the +1! */
+    va_end(args);                                  /* vsnprintf() 'uses up' args */
+    char *newString = (char *) malloc(n);
+    if (newString != 0)
+    {
+        va_start(args, format);                        /* Restart args */
+        vsprintf(newString, format, args);
+        va_end(args);
     }
-    else {
-        free (codigoC);
-        puts ("Error (re)allocating memory");
-        exit (1);
-    }
+    return newString;
 }
 
 int main()
 {   
     char *saida = "saida.lex", algoritmoC[FILENAME_MAX], entrada[FILENAME_MAX];
 
-    //    printf("Digite nome do arquivo de entrada: ");
-    //    scanf("%s", &entrada);
     strcpy (entrada, "algoritmo");
+//    printf("Digite nome do arquivo de entrada: ");
+//    scanf("%s", &entrada);
     strcpy (algoritmoC, entrada);
     strcat (algoritmoC, ".c");
 
@@ -1326,7 +1329,6 @@ int main()
             printf("Algoritmo Reconhecido!\n");
         }
 
-    concatCod("codigo.");
     fprintf(algoritmoSaida, "%s", codigoC);
     fclose(arquivoSaida);
     fclose(arquivoEntrada);
