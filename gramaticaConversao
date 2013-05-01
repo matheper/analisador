@@ -6,24 +6,24 @@ s ->
     fimalgoritmo
 
 NOMEALGORITMO ->
-    string | {}	
+    string | vazio	
 
-VAR -> var DECLARACAOVARIAVEIS | {}
+VAR -> var DECLARACAOVARIAVEIS | vazio
 
 DECLARACAOVARIAVEIS ->
-    LISTADECLARACAO DECLARACAOVARIAVEIS | {}
+    LISTADECLARACAO DECLARACAOVARIAVEIS | vazio
 
 LISTADECLARACAO ->
     identificador LISTAIDENTIFICADORES : TIPOVARIAVEL | funcao FUNCAO |
     procedimento PROCEDIMENTO
 
-LISTAIDENTIFICADORES -> ,identificador LISTAIDENTIFICADORES | {}
+LISTAIDENTIFICADORES -> ,identificador LISTAIDENTIFICADORES | vazio
 
 TIPOVARIAVEL ->
     VARIAVELSIMPLES | vetor[inteiro..inteiro MATRIZ] de VARIAVELSIMPLES
 
 MATRIZ ->
-    ,inteiro..inteiro | {}
+    ,inteiro..inteiro | vazio
 
 VARIAVELSIMPLES->
     inteiro | real | logico | literal
@@ -32,11 +32,11 @@ TIPORETORNO -> inteiro | real | logico
 
 PARAMETROS ->
     identificador LISTAIDENTIFICADORES:TIPOVARIAVEL LISTAPARAMETROS |
-    var identificador LISTAIDENTIFICADORES:VARIAVELSIMPLES | {}
+    var identificador LISTAIDENTIFICADORES:VARIAVELSIMPLES | vazio
 
-LISTAPARAMETROS -> 	;PARAMETROS | {}
+LISTAPARAMETROS -> 	;PARAMETROS | vazio
 
-VARFUNCAOPROC -> var DECLARACAOVARIAVEIS | {}
+VARFUNCAOPROC -> var DECLARACAOVARIAVEIS | vazio
 
 FUNCAO ->
     identificador (PARAMETROS): TIPORETORNO
@@ -49,15 +49,15 @@ PROCEDIMENTO ->
     inicio LISTACOMANDOS fimprocedimento
 
 E0 -> E1 E0a
-E0a -> ou E1 E0a | {}
+E0a -> ou E1 E0a | vazio
 E1-> E2 E1a
-E1a -> e E2 E1a | {}
+E1a -> e E2 E1a | vazio
 E2 -> nao E2
 E3 -> E4 op3 E4
 E4 -> E5 E4a
-E4a -> op4 E5 E4a | {}
+E4a -> op4 E5 E4a | vazio
 E5 -> E6 E5a
-E5a -> op5 E6 E5a | {}
+E5a -> op5 E6 E5a | vazio
 E6 -> E7 ^ E6
 E7 -> -E7 | TERMO
 
@@ -66,18 +66,18 @@ op3 -> < | > | <= | >=
 op4 -> + | -
 op5 -> / | * | \ | %
 
-CHAMADAFUNCAO -> (PASSAGEMPARAMETROS) | {}
-PASSAGEMPARAMETROS -> E0 PPARAMETROS | {}
-PPARAMETRO -> , E0 PPARAMETROS | {}
+CHAMADAFUNCAO -> (PASSAGEMPARAMETROS) | vazio
+PASSAGEMPARAMETROS -> E0 PPARAMETROS | vazio
+PPARAMETRO -> , E0 PPARAMETROS | vazio
 
 VARIAVEL -> identificadorVETORFUNCAO
-VETORFUNCAO -> [INTEIRO CHAMADAMATRIZ] | {}
-CHAMADAMATRIZ -> ,INTEIRO | {}
+VETORFUNCAO -> [INTEIRO CHAMADAMATRIZ] | vazio
+CHAMADAMATRIZ -> ,INTEIRO | vazio
 INTEIRO -> constInt | identificador
 CONSTANTE -> constInt | constReal | verdadeiro | falso | string
 
 LISTACOMANDOS ->
-    COMANDO LISTACOMANDOS | {}
+    COMANDO LISTACOMANDOS | vazio
 COMANDO ->
     VARIAVEL <- E0 |
     leia(LISTAVARIAVEIS) |
@@ -85,10 +85,10 @@ COMANDO ->
     se E0 entao LISTACOMANDOS FIMSE |
     repita LISTACOMANDOS ate E0 |
     enquanto E0 faca LISTACOMANDOS fimenquanto |
-    para VARIAVEL de INTEIRO aate INTEIRO PASSO faca LISTACOMANDOS fimpara | {}
+    para VARIAVEL de INTEIRO aate INTEIRO PASSO faca LISTACOMANDOS fimpara | vazio
 
-PASSO -> passo E0 | {}
+PASSO -> passo E0 | vazio
 LISTAVARIAVEIS -> VARIAVEL LVARIAVEL
-LVARIAVEL -> , VARIAVEL LVARIAVEL | {}
+LVARIAVEL -> , VARIAVEL LVARIAVEL | vazio
 
 FIMSE -> fimse | senao LISTACOMANDOS fimse
