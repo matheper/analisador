@@ -77,40 +77,41 @@ char s[TAM], codigo[TAM];
 
 char *codigoC = "";
 
+char *STRINGTEMP ="";
 
-char *concatenaCodigo(char *format, ...);
+void concatenaCodigo(char **entrada, char *format, ...);
 int lerLinha();
 void NomeToken(int cod, char* nome);
 int reconhecedor(char s[]);
 int palavraReservada(char s[]);
 int analisadorLexico();
 int nomeAlgoritmo();
-int listaIdentificadores();
-int variavelSimples();
+int listaIdentificadores(char **val);
+int variavelSimples(char **val);
 int matriz();
-int tipoVariavel();
+int tipoVariavel(char **val);
 int declaracaoVariaveisFunc();
-int declaracaoVariaveis();
+int declaracaoVariaveis(char **val);
 int listaParametros();
 int parametros();
 int tipoRetorno();
 int varFuncaoProc();
 int funcao();
 int procedimento();
-int var();
-int E0();
-int E0a();
-int E1();
-int E1a();
-int E2();
-int E3();
-int E4();
-int E4a();
-int E5();
-int E5a();
-int E6();
-int E7();
-int termo();
+int var(char **val);
+int E0(char *codEntrada);
+int E0a(char *codEntrada);
+int E1(char *codEntrada);
+int E1a(char *codEntrada);
+int E2(char *codEntrada);
+int E3(char *codEntrada);
+int E4(char *codEntrada);
+int E4a(char *codEntrada);
+int E5(char *codEntrada);
+int E5a(char *codEntrada);
+int E6(char *codEntrada);
+int E7(char *codEntrada);
+int termo(char *codEntrada);
 int passagemParametros();
 int pParametros();
 int variavel();
@@ -474,12 +475,15 @@ int nomeAlgoritmo(){
     return 1;
 }
 
-int listaIdentificadores(){
+int listaIdentificadores(char **val){
+    char *id = "", *listaIdentificadoresS = "";
     if (codToken == VIRGULA){
         analisadorLexico();
         if(codToken == ID){
+            concatenaCodigo(&id, token);
             analisadorLexico();
-            listaIdentificadores();
+            listaIdentificadores(&listaIdentificadoresS);
+            concatenaCodigo(val, " ,%s%s",id, listaIdentificadoresS);
         }
         else{
             printf("Esperava identificador apos virgula na linha %d\nencontrou %s\n", linha, token);
@@ -489,10 +493,15 @@ int listaIdentificadores(){
     return 1;
 }
 
-int variavelSimples(){
-    if(codToken == INTEIRO || codToken == REAL
-            || codToken == LOGICO || codToken == LITERAL){
+int variavelSimples(char **val){
+    char *tipo = "";
+    if(codToken == INTEIRO || codToken == REAL || codToken == LOGICO || codToken == LITERAL){
+        if (codToken == INTEIRO) concatenaCodigo(&tipo, "int ");
+        else if (codToken == REAL) concatenaCodigo(&tipo, "float ");
+        else if (codToken == LOGICO) concatenaCodigo(&tipo, "bool ");
+        else if (codToken == LITERAL) concatenaCodigo(&tipo, "char * ");
         analisadorLexico();
+        concatenaCodigo(val, "%s ",tipo);
         return 1;
     }
     return 0;
@@ -526,8 +535,12 @@ int matriz(){
     return 1;
 }
 
-int tipoVariavel(){
-    if(variavelSimples()) return 1;
+int tipoVariavel(char **val){
+    char *variavelSimplesVal = "";
+    if(variavelSimples(&variavelSimplesVal)){
+        concatenaCodigo(val, "%s", variavelSimplesVal);
+        return 1;
+    }
     if(codToken == VETOR){
         analisadorLexico();
         if(codToken == ABRECOLCHETE){
@@ -543,7 +556,7 @@ int tipoVariavel(){
                             analisadorLexico();
                             if(codToken == DE){
                                 analisadorLexico();
-                                if(variavelSimples()){
+                                if(variavelSimples(&STRINGTEMP)){
                                     return 1;
                                 }
                                 else{
@@ -587,10 +600,10 @@ int tipoVariavel(){
 declaracaoVariaveisFunc(){
     if(codToken == ID){
         analisadorLexico();
-        listaIdentificadores();
+        listaIdentificadores(&STRINGTEMP);
         if(codToken == DOISPONTOS){
             analisadorLexico();
-            if (!tipoVariavel()){
+            if (!tipoVariavel(&STRINGTEMP)){
                 printf("Esperava tipo na linha %d\nencontrou %s\n", linha, token);
                 exit(0);
             }
@@ -603,17 +616,20 @@ declaracaoVariaveisFunc(){
     }
 }
 
-int declaracaoVariaveis(){
+int declaracaoVariaveis(char **val){
+    char *declaracaoVariaveisS="", *listaIdentificadoresVal="", *tipoVariavelVal="", *id="";
     if(codToken == ID){
+        concatenaCodigo(&id, token);
         analisadorLexico();
-        listaIdentificadores();
+        listaIdentificadores(&listaIdentificadoresVal);
         if(codToken == DOISPONTOS){
             analisadorLexico();
-            if (!tipoVariavel()){
+            if (!tipoVariavel(&tipoVariavelVal)){
                 printf("Esperava tipo na linha %d\nencontrou %s\n", linha, token);
                 exit(0);
             }
-            declaracaoVariaveis();
+            declaracaoVariaveis(&declaracaoVariaveisS);
+            concatenaCodigo(val, "%s%s%s%s%s", tipoVariavelVal, id, listaIdentificadoresVal, ";\n", declaracaoVariaveisS);
         }
         else{
             printf("Esperava dois pontos ou virgula na linha %d\nencontrou %s\n", linha, token);
@@ -623,12 +639,12 @@ int declaracaoVariaveis(){
     if(codToken == FUNCAO){
         analisadorLexico();
         funcao();
-        declaracaoVariaveis();
+        declaracaoVariaveis(&declaracaoVariaveisS);
     }
     if(codToken == PROCEDIMENTO){
         analisadorLexico();
         procedimento();
-        declaracaoVariaveis();
+        declaracaoVariaveis(&declaracaoVariaveisS);
     }
     return 1;
 }
@@ -644,10 +660,10 @@ int listaParametros(){
 int parametros(){
     if(codToken == ID){
         analisadorLexico();
-        listaIdentificadores();
+        listaIdentificadores(&STRINGTEMP);
         if(codToken == DOISPONTOS){
             analisadorLexico();
-            tipoVariavel();
+            tipoVariavel(&STRINGTEMP);
             listaParametros();
         }
         else{
@@ -659,10 +675,10 @@ int parametros(){
         analisadorLexico();
         if(codToken == ID){
             analisadorLexico();
-            listaIdentificadores();
+            listaIdentificadores(&STRINGTEMP);
             if(codToken == DOISPONTOS){
                 analisadorLexico();
-                if(!variavelSimples()){
+                if(!variavelSimples(&STRINGTEMP)){
                     printf("Esperava tipo na linha %d\nencontrou %s\n", linha, token);
                     exit(0);
                 }
@@ -793,117 +809,136 @@ int procedimento(){
     }
 }
 
-int var(){
+int var(char **val){
+    char *declaracaoVariaveisVal="";
     if(codToken == VAR){
         analisadorLexico();
-        declaracaoVariaveis();
+        declaracaoVariaveis(&declaracaoVariaveisVal);
+        concatenaCodigo(val, "%s", declaracaoVariaveisVal);
     }
     return 1;
 }
 
-int E0(){
+int E0(char *codEntrada){
     int retorno;
-    retorno = E1();
-    E0a();
-    return retorno;    
-}
-
-int E0a(){
-    if(codToken == OU){
-        analisadorLexico();
-        E1();
-        E0a();
-    }
-}
-
-int E1(){
-    int retorno;
-    retorno = E2();
-    E1a();
+    char *codE1 = "", *codE0a = "";
+    retorno = E1(codE1);
+    E0a(codE0a);
+    printf("%s", codEntrada);
     return retorno;
 }
 
-int E1a(){
+int E0a(char *codEntrada){
+    char *codE1 ="", *codE0a = "";
+    if(codToken == OU){
+        analisadorLexico();
+        E1(codE1);
+        E0a(codE0a);
+    }
+}
+
+int E1(char *codEntrada){
+    char *codE2 = "", *codE1a = "";
+    int retorno;
+    retorno = E2(codE2);
+    E1a(codE1a);
+    return retorno;
+}
+
+int E1a(char *codEntrada){
+    char *codE2 ="", *codE1a = "";
     if(codToken == E){
         analisadorLexico();
-        E2();
-        E1a();
+        E2(codE2);
+        E1a(codE1a);
     }
 }
 
-int E2(){
+int E2(char *codEntrada){
+    char *codE2 ="", *codE3 = "";
     if(codToken == NAO){
         analisadorLexico();
-        E2();
+        E2(codE2);
     }
-    else return E3();
+    else {
+        int retorno = E3(codE3);
+        return retorno;
+    }
 }
 
-int E3(){
+int E3(char *codEntrada){
+    char *codE4 ="";
     int retorno;
-    retorno = E4();
+    retorno = E4(codE4);
     if(codToken == MAIOR || codToken == MAIORIGUAL ||
             codToken == MENOR || codToken == MENORIGUAL ){
         analisadorLexico();
-        E4();
+        E4(codE4);
     }
     return retorno;
 }
 
-int E4(){
+int E4(char *codEntrada){
+    char *sintetizado ="";
     int retorno;
-    retorno = E5();
-    E4a();
+    retorno = E5(sintetizado);
+    E4a(sintetizado);
     return retorno;
 }
 
-int E4a(){
+int E4a(char *codEntrada){
+    char *codE5 = "", *codE4a = "";
     if(codToken == MAIS || codToken == MENOS){
         analisadorLexico();
-        E5();
-        E4a();
+        E5(codE5);
+        E4a(codE4a);
     }
 }
 
-int E5(){
+int E5(char *codEntrada){
+    char *sintetizado ="";
     int retorno;
-    retorno = E6();
-    E5a();
+    retorno = E6(sintetizado);
+    E5a(sintetizado);
     return retorno;
 }
 
-int E5a(){
+int E5a(char *codEntrada){
+    char *sintetizado ="";
     if(codToken == DIVISAO || codToken == MULTIPLICACAO ||
             codToken == RESTO || codToken == DIVINTEIRA ){
         analisadorLexico();
-        E6();
-        E5a();
+        E6(sintetizado);
+        E5a(sintetizado);
     }
 }
 
-int E6(){
+int E6(char *codEntrada){
+    char *sintetizado ="";
     int retorno;
-    retorno = E7();
+    retorno = E7(sintetizado);
     if(codToken == POTENCIA){
         analisadorLexico();
-        E6();
+        E6(sintetizado);
     }
     return retorno;
 }
-int E7(){
+int E7(char *codEntrada){
+    char *sintetizado ="";
     if(codToken == MENOS){
         analisadorLexico();
-        E7();            
+        E7(sintetizado);
     }
     else{
-        return termo();
+        return termo(sintetizado);
     }
 }
 
-int termo(){
+int termo(char *codEntrada){
+    char *sintetizado ="";
     if(codToken == ABREPAR){
         analisadorLexico();
-        if (E0()){
+        if (E0(sintetizado)){
             if(codToken == FECHAPAR){
                 analisadorLexico();
                 return 1;
@@ -943,7 +978,7 @@ int chamadaFuncao(){
 }
 
 int passagemParametros(){
-    if(E0()){
+    if(E0(STRINGTEMP)){
         pParametros();
     }
     return 1;
@@ -952,7 +987,7 @@ int passagemParametros(){
 int pParametros(){
     if(codToken == VIRGULA){
         analisadorLexico();
-        E0();
+        E0(STRINGTEMP);
         pParametros();
     }
 }
@@ -1091,7 +1126,7 @@ int comando(){
     else if(tVar == 1){
         if(codToken == ATRIBUICAO){
             analisadorLexico();
-            if(E0())
+            if(E0(STRINGTEMP))
                 return 1;
             else{
                 printf("Esperava expressao na linha %d\nencontrou %s\n", linha, token);
@@ -1143,7 +1178,7 @@ int comando(){
     }
     if(codToken == SE){
         analisadorLexico();
-        if(E0()){
+        if(E0(STRINGTEMP)){
             if(codToken == ENTAO){
                 analisadorLexico();
                 listaComandos();
@@ -1165,7 +1200,7 @@ int comando(){
         listaComandos();
         if(codToken == ATE){
             analisadorLexico();
-            E0();
+            E0(STRINGTEMP);
             return 1;
         }
         else{
@@ -1175,7 +1210,7 @@ int comando(){
     }
     if(codToken == ENQUANTO){
         analisadorLexico();
-        if(E0()){
+        if(E0(STRINGTEMP)){
             listaComandos();
             if(codToken == FIMENQUANTO){
                 analisadorLexico();
@@ -1243,10 +1278,8 @@ int comando(){
         }
     }
     if (codToken == RETORNE){
-        codigoC = concatenaCodigo("%s%s", codigoC, "return ");
         analisadorLexico();
-        E0();
-        codigoC = concatenaCodigo("%s%s", codigoC,";\n");
+        E0(STRINGTEMP);
         return 1;
     }
     return 0;
@@ -1255,15 +1288,18 @@ int comando(){
 int analisadorSintatico()
 {
     int cod;
+    char *varVal="", *listaComandosVal="";
     analisadorLexico();
     if(codToken == ALGORITMO){
         analisadorLexico();
         nomeAlgoritmo();
-        var();
+        var(&varVal);
         if(codToken == INICIO){
             analisadorLexico();
             listaComandos();
             if(codToken == FIMALGORITMO){
+                concatenaCodigo(&codigoC, "%s%s%s%s%s","#include <stdio.h>\n#include <stdlib.h>\n",
+                                          varVal, "int main(){\n", listaComandosVal, "}\n");
             }
             else{
                 printf("Esperava palavra 'Fimalgoritmo' na linha %d\nencontrou %s\n", linha, token);
@@ -1283,7 +1319,25 @@ int analisadorSintatico()
     return 1;
 }
 
+/*
 char *concatenaCodigo(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int n = vsnprintf(NULL, 0, format, args) + 1;  // Note the +1!
+    va_end(args);                                  // vsnprintf() 'uses up' args
+    char *newString = (char *) malloc(n);
+    if (newString != 0)
+    {
+        va_start(args, format);                        // Restart args
+        vsprintf(newString, format, args);
+        va_end(args);
+    }
+    return newString;
+}
+*/
+
+void concatenaCodigo(char **entrada, char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -1296,7 +1350,7 @@ char *concatenaCodigo(char *format, ...)
         vsprintf(newString, format, args);
         va_end(args);
     }
-    return newString;
+    *entrada = newString;
 }
 
 int main()

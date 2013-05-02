@@ -1,41 +1,9 @@
 algoritmo
     var a,b,c:inteiro
         f:real
-        j:vetor[1..10] de inteiro
-        funcao fat(m:inteiro):inteiro
-            var f:inteiro
-            inicio
-                se n<=1
-                    entao retorne 1
-                    senao retorne a
-                fimse
-        fimfuncao
         x,y: real
 
 inicio
-    escreva(4)
-    escreva(fat(4))
     a <- 3
     b <- a + b
-    teste <- verdadeiro
-    var1 <- sen(30)
-    maior <- -(a+b+abs(a-b))/2
-
-    se a > b
-    entao escreva ("a ¶e maior")
-    senao escreva("b ¶e maior")
-    fimse
-
-    Repita
-    escreval(i)
-    i<-i+1
-    ate i>5
-
-    i<-1
-
-    f<-1
-        para i de 1 ate n faca
-        f<-f*i
-    fimpara
-
 fimalgoritmo
