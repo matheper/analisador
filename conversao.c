@@ -94,10 +94,9 @@ int declaracaoVariaveisFunc();
 int declaracaoVariaveis(char **val);
 int listaParametros();
 int parametros();
-int tipoRetorno();
-int varFuncaoProc();
-int funcao();
-int procedimento();
+int tipoRetorno(char **val);
+int funcao(char **val);
+int procedimento(char **val);
 int var(char **val);
 int E0(char *codEntrada);
 int E0a(char *codEntrada);
@@ -483,7 +482,7 @@ int listaIdentificadores(char **val){
             concatenaCodigo(&id, token);
             analisadorLexico();
             listaIdentificadores(&listaIdentificadoresS);
-            concatenaCodigo(val, " ,%s%s",id, listaIdentificadoresS);
+            concatenaCodigo(val, ", %s%s",id, listaIdentificadoresS);
         }
         else{
             printf("Esperava identificador apos virgula na linha %d\nencontrou %s\n", linha, token);
@@ -494,14 +493,12 @@ int listaIdentificadores(char **val){
 }
 
 int variavelSimples(char **val){
-    char *tipo = "";
     if(codToken == INTEIRO || codToken == REAL || codToken == LOGICO || codToken == LITERAL){
-        if (codToken == INTEIRO) concatenaCodigo(&tipo, "int ");
-        else if (codToken == REAL) concatenaCodigo(&tipo, "float ");
-        else if (codToken == LOGICO) concatenaCodigo(&tipo, "bool ");
-        else if (codToken == LITERAL) concatenaCodigo(&tipo, "char * ");
+        if (codToken == INTEIRO) concatenaCodigo(val, "int ");
+        else if (codToken == REAL) concatenaCodigo(val, "float ");
+        else if (codToken == LOGICO) concatenaCodigo(val, "bool ");
+        else if (codToken == LITERAL) concatenaCodigo(val, "char * ");
         analisadorLexico();
-        concatenaCodigo(val, "%s ",tipo);
         return 1;
     }
     return 0;
@@ -617,9 +614,10 @@ declaracaoVariaveisFunc(){
 }
 
 int declaracaoVariaveis(char **val){
-    char *declaracaoVariaveisS="", *listaIdentificadoresVal="", *tipoVariavelVal="", *id="";
+    char *declaracaoVariaveisS="", *listaIdentificadoresVal="",
+         *procedimentoVal="", *funcaoVal="", *tipoVariavelVal="", *id="";
     if(codToken == ID){
-        concatenaCodigo(&id, token);
+        concatenaCodigo(&id, "%s", token);
         analisadorLexico();
         listaIdentificadores(&listaIdentificadoresVal);
         if(codToken == DOISPONTOS){
@@ -638,13 +636,15 @@ int declaracaoVariaveis(char **val){
     }
     if(codToken == FUNCAO){
         analisadorLexico();
-        funcao();
+        funcao(&funcaoVal);
         declaracaoVariaveis(&declaracaoVariaveisS);
+        concatenaCodigo(val, "%s%s", funcaoVal, declaracaoVariaveisS);
     }
     if(codToken == PROCEDIMENTO){
         analisadorLexico();
-        procedimento();
+        procedimento(&procedimentoVal);
         declaracaoVariaveis(&declaracaoVariaveisS);
+        concatenaCodigo(val, "%s%s%s", procedimentoVal, "\n", declaracaoVariaveisS);
     }
     return 1;
 }
@@ -697,8 +697,11 @@ int parametros(){
     return 1;
 }
 
-int tipoRetorno(){
+int tipoRetorno(char **val){
     if(codToken == INTEIRO || codToken == REAL || codToken == LOGICO){
+        if (codToken == INTEIRO) concatenaCodigo(val, "int ");
+        else if (codToken == REAL) concatenaCodigo(val, "float ");
+        else if (codToken == LOGICO) concatenaCodigo(val, "bool ");
         analisadorLexico();
     }
     else{
@@ -708,16 +711,11 @@ int tipoRetorno(){
     return 1;
 }
 
-int varFuncaoProc(){
-    if(codToken == VAR){
-        analisadorLexico();
-        declaracaoVariaveisFunc();
-    }
-    return 1;
-}
-
-int funcao(){
+int funcao(char **val){
+    char *id="", *parametrosVal="", *tipoRetornoVal="",
+         *varVal="", *listaComandosVal="";
     if(codToken == ID){
+        concatenaCodigo(&id, "%s", token);
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
@@ -726,13 +724,14 @@ int funcao(){
                 analisadorLexico();
                 if(codToken == DOISPONTOS){
                     analisadorLexico();
-                    tipoRetorno();
-                    varFuncaoProc();
+                    tipoRetorno(&tipoRetornoVal);
+                    var(&varVal);
                     if(codToken == INICIO){
                         analisadorLexico();
                         listaComandos();
                         if(codToken == FIMFUNCAO){
                             analisadorLexico();
+                            concatenaCodigo(val, "%s%s%s%s%s%s%s%s", tipoRetornoVal, id, "(", parametrosVal, "){\n", varVal, listaComandosVal, "}\n");
                             return 1;
                         }
                         else{
@@ -767,20 +766,23 @@ int funcao(){
     return 1;
 }
 
-int procedimento(){
+int procedimento(char **val){
+    char *id="", *parametrosVal="parametrosVal", *varVal="", *listaComandosVal="listaComandosVal";
     if(codToken == ID){
+        concatenaCodigo(&id,"%s", token);
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
             parametros();
             if(codToken == FECHAPAR){
                 analisadorLexico();
-                varFuncaoProc();
+                var(&varVal);
                 if(codToken == INICIO){
                     analisadorLexico();
                     listaComandos();
                     if(codToken == FIMPROCEDIMENTO){
                         analisadorLexico();
+                        concatenaCodigo(val,"%s%s%s%s%s%s%s%s", "void ", id, "(", parametrosVal, "){\n", varVal, listaComandosVal, "\n}\n");
                         return 1;
                     }
                     else{
@@ -824,7 +826,6 @@ int E0(char *codEntrada){
     char *codE1 = "", *codE0a = "";
     retorno = E1(codE1);
     E0a(codE0a);
-    printf("%s", codEntrada);
     return retorno;
 }
 
@@ -1387,5 +1388,5 @@ int main()
     fclose(arquivoSaida);
     fclose(arquivoEntrada);
     fclose(algoritmoSaida);
-    getchar();
+//    getchar();
 }

@@ -1,8 +1,23 @@
 algoritmo
     var a,b,c:inteiro
         f:real
+        funcao fat(m:inteiro):real
+            var f:inteiro
+            inicio
+                se n<=1
+                    entao retorne 1 + 2 * (4 - 5) ^ 3
+                    senao retorne a
+                fimse
+        fimfuncao
         x,y: real
-
+        procedimento fat(m:inteiro)
+            var f:inteiro
+            inicio
+                se n<=1
+                    entao retorne 1 + 2 * (4 - 5) ^ 3
+                    senao retorne a
+                fimse
+        fimprocedimento
 inicio
     a <- 3
     b <- a + b
