@@ -10,7 +10,7 @@ algoritmo "MeuAlgoritmo"
                 fimse
         fimfuncao
         x,y: real
-        procedimento fat(m:inteiro)
+        procedimento fat(a, b, c, m:inteiro; h, f, g:real)
             var f:inteiro
             inicio
                 se n<=1

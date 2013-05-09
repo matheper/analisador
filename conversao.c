@@ -92,8 +92,9 @@ int matriz();
 int tipoVariavel(char **val);
 int declaracaoVariaveisFunc();
 int declaracaoVariaveis(char **val);
-int listaParametros();
-int parametros();
+int listaParametros(char **val);
+int parametros(char **val);
+int listaIdentificadoresTipoVariavel(char **val, char **tipoVariavelVal);
 int tipoRetorno(char **val);
 int funcao(char **val);
 int procedimento(char **val);
@@ -650,27 +651,60 @@ int declaracaoVariaveis(char **val){
     return 1;
 }
 
-int listaParametros(){
-    if(codToken == PONTOEVIRGULA){
+int listaIdentificadoresTipoVariavel(char **val, char **tipoVariavelVal){
+    char *id = "", *listaIdentificadoresS = "";
+    if (codToken == VIRGULA){
         analisadorLexico();
-        parametros();
+        if(codToken == ID){
+            concatenaCodigo(&id, token);
+            analisadorLexico();
+            listaIdentificadoresTipoVariavel(&listaIdentificadoresS, tipoVariavelVal);
+        }
+        else{
+            printf("Esperava identificador apos virgula na linha %d\nencontrou %s\n", linha, token);
+            exit(0);
+        }
+    }
+    else if(codToken == DOISPONTOS){
+        analisadorLexico();
+        tipoVariavel(tipoVariavelVal);
+        return 1;
+    }
+    else{
+        printf("Esperava dois pontos ou virgula apos identificador na linha %d\nencontrou %s\n", linha, token);
+        exit(0);
+    }
+
+    if (*listaIdentificadoresS){
+        concatenaCodigo(val, "%s%s, %s", *tipoVariavelVal, id, listaIdentificadoresS);
+    }
+    else{
+        concatenaCodigo(val, ", %s%s", *tipoVariavelVal, id);
     }
     return 1;
 }
 
-int parametros(){
-    if(codToken == ID){
+int listaParametros(char **val){
+    char *parametrosVal="";
+    if(codToken == PONTOEVIRGULA){
         analisadorLexico();
-        listaIdentificadores(&STRINGTEMP);
-        if(codToken == DOISPONTOS){
-            analisadorLexico();
-            tipoVariavel(&STRINGTEMP);
-            listaParametros();
-        }
-        else{
-            printf("Esperava dois pontos na linha %d\nencontrou %s\n", linha, token);
-            exit(0);
-        }
+        parametros(&parametrosVal);
+        concatenaCodigo(val,"%s; %s", *val, parametrosVal);
+    }
+    return 1;
+}
+
+int parametros(char **val){
+    char *id="", *tipoVariavelVal="", *listaIdentificadoresTipoVariavelVal = "", *listaParametrosVal="";
+    if(codToken == ID){
+        concatenaCodigo(&id,"%s", token);
+        analisadorLexico();
+        listaIdentificadoresTipoVariavel(&listaIdentificadoresTipoVariavelVal, &tipoVariavelVal);
+        listaParametros(&listaParametrosVal);
+        if (listaIdentificadoresTipoVariavelVal)
+            concatenaCodigo(val,"%s%s, %s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
+        else
+            concatenaCodigo(val,"%s%s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
     }
     else if(codToken == VAR){
         analisadorLexico();
@@ -720,7 +754,7 @@ int funcao(char **val){
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
-            parametros();
+            parametros(&parametrosVal);
             if(codToken == FECHAPAR){
                 analisadorLexico();
                 if(codToken == DOISPONTOS){
@@ -774,7 +808,7 @@ int procedimento(char **val){
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
-            parametros();
+            parametros(&parametrosVal);
             if(codToken == FECHAPAR){
                 analisadorLexico();
                 var(&varVal);
