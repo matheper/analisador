@@ -1,4 +1,4 @@
-algoritmo
+algoritmo "MeuAlgoritmo"
     var a,b,c:inteiro
         f:real
         funcao fat(m:inteiro):real

@@ -85,7 +85,7 @@ void NomeToken(int cod, char* nome);
 int reconhecedor(char s[]);
 int palavraReservada(char s[]);
 int analisadorLexico();
-int nomeAlgoritmo();
+int nomeAlgoritmo(char **val);
 int listaIdentificadores(char **val);
 int variavelSimples(char **val);
 int matriz();
@@ -467,8 +467,9 @@ int analisadorLexico()
    Linguagens Formais
  */
 
-int nomeAlgoritmo(){
+int nomeAlgoritmo(char **val){
     if(codToken == STRING){
+        concatenaCodigo(val,"//%s\n", token);
         analisadorLexico();
     }
     return 1;
@@ -1289,18 +1290,18 @@ int comando(){
 int analisadorSintatico()
 {
     int cod;
-    char *varVal="", *listaComandosVal="";
+    char *varVal="", *listaComandosVal="", *nomeAlgoritmoVal="";
     analisadorLexico();
     if(codToken == ALGORITMO){
         analisadorLexico();
-        nomeAlgoritmo();
+        nomeAlgoritmo(&nomeAlgoritmoVal);
         var(&varVal);
         if(codToken == INICIO){
             analisadorLexico();
             listaComandos();
             if(codToken == FIMALGORITMO){
-                concatenaCodigo(&codigoC, "%s%s%s%s%s","#include <stdio.h>\n#include <stdlib.h>\n",
-                                          varVal, "int main(){\n", listaComandosVal, "}\n");
+                concatenaCodigo(&codigoC, "%s%s%s%s%s%s","#include <stdio.h>\n#include <stdlib.h>\n",
+                                          nomeAlgoritmoVal, varVal, "int main(){\n", listaComandosVal, "}\n");
             }
             else{
                 printf("Esperava palavra 'Fimalgoritmo' na linha %d\nencontrou %s\n", linha, token);
