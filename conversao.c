@@ -675,12 +675,12 @@ int listaIdentificadoresTipoVariavel(char **val, char **tipoVariavelVal){
         exit(0);
     }
 
-    if (*listaIdentificadoresS){
-        concatenaCodigo(val, "%s%s, %s", *tipoVariavelVal, id, listaIdentificadoresS);
-    }
-    else{
+//    if (*listaIdentificadoresS){
+//        concatenaCodigo(val, "%s%s, %s", *tipoVariavelVal, id, listaIdentificadoresS);
+//    }
+//    else{
         concatenaCodigo(val, ", %s%s", *tipoVariavelVal, id);
-    }
+//    }
     return 1;
 }
 
@@ -701,10 +701,10 @@ int parametros(char **val){
         analisadorLexico();
         listaIdentificadoresTipoVariavel(&listaIdentificadoresTipoVariavelVal, &tipoVariavelVal);
         listaParametros(&listaParametrosVal);
-        if (listaIdentificadoresTipoVariavelVal)
-            concatenaCodigo(val,"%s%s, %s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
-        else
-            concatenaCodigo(val,"%s%s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
+        //if (listaIdentificadoresTipoVariavelVal)
+        //    concatenaCodigo(val,"%s%s, %s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
+        //else
+            concatenaCodigo(val,"%s%s%s%s", tipoVariavelVal, id, listaIdentificadoresTipoVariavelVal, listaParametrosVal);
     }
     else if(codToken == VAR){
         analisadorLexico();
