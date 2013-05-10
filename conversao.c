@@ -99,30 +99,32 @@ int tipoRetorno(char **val);
 int funcao(char **val);
 int procedimento(char **val);
 int var(char **val);
-int E0(char *codEntrada);
-int E0a(char *codEntrada);
-int E1(char *codEntrada);
-int E1a(char *codEntrada);
-int E2(char *codEntrada);
-int E3(char *codEntrada);
-int E4(char *codEntrada);
-int E4a(char *codEntrada);
-int E5(char *codEntrada);
-int E5a(char *codEntrada);
-int E6(char *codEntrada);
-int E7(char *codEntrada);
-int termo(char *codEntrada);
+int E0(char **val);
+int E0a(char **val);
+int E1(char **val);
+int E1a(char **val);
+int E2(char **val);
+int E3(char **val);
+int E4(char **val);
+int E4a(char **val);
+int E5(char **val);
+int E5a(char **val);
+int E6(char **val);
+int E7(char **val);
+int termo(char **val);
 int passagemParametros();
 int pParametros();
-int variavel();
+int variavel(char **val);
 int vetorFuncao();
 int tipoMatriz();
 int inteiro();
-int constante();
-int listaComandos();
+int constante(char **val);
+int comando(char **val);
+int listaComandos(char **val);
 int comandos();
 int listaVariaveis();
-int fimse();
+int fimse(char **val);
+int passo(char **val);
 int analisadorSintatico();
 int main();
 
@@ -754,7 +756,7 @@ int funcao(char **val){
                     var(&varVal);
                     if(codToken == INICIO){
                         analisadorLexico();
-                        listaComandos();
+                        listaComandos(&listaComandosVal);
                         if(codToken == FIMFUNCAO){
                             analisadorLexico();
                             concatenaCodigo(val, "%s%s%s%s%s%s%s%s", tipoRetornoVal, id, "(", parametrosVal, "){\n", varVal, listaComandosVal, "}\n");
@@ -793,7 +795,7 @@ int funcao(char **val){
 }
 
 int procedimento(char **val){
-    char *id="", *parametrosVal="parametrosVal", *varVal="", *listaComandosVal="listaComandosVal";
+    char *id="", *parametrosVal="parametrosVal", *varVal="", *listaComandosVal="";
     if(codToken == ID){
         concatenaCodigo(&id,"%s", token);
         analisadorLexico();
@@ -805,7 +807,7 @@ int procedimento(char **val){
                 var(&varVal);
                 if(codToken == INICIO){
                     analisadorLexico();
-                    listaComandos();
+                    listaComandos(&listaComandosVal);
                     if(codToken == FIMPROCEDIMENTO){
                         analisadorLexico();
                         concatenaCodigo(val,"%s%s%s%s%s%s%s%s", "void ", id, "(", parametrosVal, "){\n", varVal, listaComandosVal, "\n}\n");
@@ -847,127 +849,150 @@ int var(char **val){
     return 1;
 }
 
-int E0(char *codEntrada){
+int E0(char **val){
     int retorno;
-    char *codE1 = "", *codE0a = "";
-    retorno = E1(codE1);
-    E0a(codE0a);
+    char *E1Val = "", *E0aVal = "";
+    retorno = E1(&E1Val);
+    E0a(&E0aVal);
+    concatenaCodigo(val,"%s%s", E1Val, E0aVal);
     return retorno;
 }
 
-int E0a(char *codEntrada){
-    char *codE1 ="", *codE0a = "";
+int E0a(char **val){
+    char *E1Val ="", *E0aVal = "";
     if(codToken == OU){
         analisadorLexico();
-        E1(codE1);
-        E0a(codE0a);
+        E1(&E1Val);
+        E0a(&E0aVal);
+        concatenaCodigo(val,"%s||%s", E1Val, E0aVal);
     }
 }
 
-int E1(char *codEntrada){
-    char *codE2 = "", *codE1a = "";
+int E1(char **val){
+    char *E2Val = "", *E1aVal = "";
     int retorno;
-    retorno = E2(codE2);
-    E1a(codE1a);
+    retorno = E2(&E2Val);
+    E1a(&E1aVal);
+    concatenaCodigo(val,"%s%s", E2Val, E1aVal);
     return retorno;
 }
 
-int E1a(char *codEntrada){
-    char *codE2 ="", *codE1a = "";
+int E1a(char **val){
+    char *E2Val ="", *E1aVal = "";
     if(codToken == E){
         analisadorLexico();
-        E2(codE2);
-        E1a(codE1a);
+        E2(&E2Val);
+        E1a(&E1aVal);
+        concatenaCodigo(val,"%s&&%s", E2Val, E1aVal);
     }
 }
 
-int E2(char *codEntrada){
-    char *codE2 ="", *codE3 = "";
+int E2(char **val){
+    char *E2Val ="", *E3Val = "";
     if(codToken == NAO){
         analisadorLexico();
-        E2(codE2);
+        E2(&E2Val);
+        concatenaCodigo(val,"!%s", E2Val);
     }
     else {
-        int retorno = E3(codE3);
+        int retorno = E3(&E3Val);
+        concatenaCodigo(val,E3Val);
         return retorno;
     }
 }
 
-int E3(char *codEntrada){
-    char *codE4 ="";
+int E3(char **val){
+    char *E4Val="", *E42Val="", *opVal="";
     int retorno;
-    retorno = E4(codE4);
+    retorno = E4(&E4Val);
     if(codToken == MAIOR || codToken == MAIORIGUAL ||
             codToken == MENOR || codToken == MENORIGUAL ){
+        concatenaCodigo(&opVal, " %s ", token);
         analisadorLexico();
-        E4(codE4);
+        E4(&E42Val);
     }
+    concatenaCodigo(val, "%s%s%s", opVal, E4Val, E42Val);
     return retorno;
 }
 
-int E4(char *codEntrada){
-    char *sintetizado ="";
+int E4(char **val){
+    char *E4aVal="", *E5Val="";
     int retorno;
-    retorno = E5(sintetizado);
-    E4a(sintetizado);
+    retorno = E5(&E5Val);
+    E4a(&E4aVal);
+    concatenaCodigo(val,"%s%s", E5Val, E4aVal);
     return retorno;
 }
 
-int E4a(char *codEntrada){
-    char *codE5 = "", *codE4a = "";
+int E4a(char **val){
+    char *E5Val = "", *E4aVal = "", *opVal="";
     if(codToken == MAIS || codToken == MENOS){
+        concatenaCodigo(&opVal," %s ", token);
         analisadorLexico();
-        E5(codE5);
-        E4a(codE4a);
+        E5(&E5Val);
+        E4a(&E4aVal);
     }
+    concatenaCodigo(val, "%s%s%s", opVal, E5Val, E4aVal);
 }
 
-int E5(char *codEntrada){
-    char *sintetizado ="";
+int E5(char **val){
+    char *E6Val ="", *E5aVal;
     int retorno;
-    retorno = E6(sintetizado);
-    E5a(sintetizado);
+    retorno = E6(&E6Val);
+    E5a(&E5aVal);
+    concatenaCodigo(val, "%s%s", E6Val, E5aVal);
     return retorno;
 }
 
-int E5a(char *codEntrada){
-    char *sintetizado ="";
+int E5a(char **val){
+    char *E6Val ="", *E5aVal="", *opVal="";
     if(codToken == DIVISAO || codToken == MULTIPLICACAO ||
             codToken == RESTO || codToken == DIVINTEIRA ){
+        concatenaCodigo(&opVal," %s ", token);
         analisadorLexico();
-        E6(sintetizado);
-        E5a(sintetizado);
+        E6(&E6Val);
+        E5a(&E5aVal);
     }
+    concatenaCodigo(val, "%s%s%s", opVal, E6Val, E5aVal);
 }
 
-int E6(char *codEntrada){
-    char *sintetizado ="";
+int E6(char **val){
+    char *E7Val="", *E6Val="";
     int retorno;
-    retorno = E7(sintetizado);
+    retorno = E7(&E7Val);
     if(codToken == POTENCIA){
         analisadorLexico();
-        E6(sintetizado);
+        E6(&E6Val);
+        concatenaCodigo(val, "pow(%s,%s)", E7Val,E6Val);
+    }
+    else{
+        concatenaCodigo(val, "%s%s", E7Val,E6Val);
     }
     return retorno;
 }
-int E7(char *codEntrada){
-    char *sintetizado ="";
+int E7(char **val){
+    char *E7Val ="", *termoVal="";
+    int retorno;
     if(codToken == MENOS){
         analisadorLexico();
-        E7(sintetizado);
+        E7(&E7Val);
+        concatenaCodigo(val, "-%s", E7Val);
     }
     else{
-        return termo(sintetizado);
+        retorno = termo(&termoVal);
+        concatenaCodigo(val, termoVal);
+        return retorno;
     }
 }
 
-int termo(char *codEntrada){
-    char *sintetizado ="";
+int termo(char **val){
+    char *E0Val ="", *variavelVal="", *constanteVal="";
     if(codToken == ABREPAR){
         analisadorLexico();
-        if (E0(sintetizado)){
+        if (E0(&E0Val)){
             if(codToken == FECHAPAR){
                 analisadorLexico();
+                concatenaCodigo(val,"(%s)", E0Val);
                 return 1;
             }
             else{
@@ -980,10 +1005,13 @@ int termo(char *codEntrada){
             exit(0);
         }
     }
-    else{
-        if(variavel() || constante()){
-            return 1;
-        }
+    else if(variavel(&variavelVal)){
+        concatenaCodigo(val,"%s",variavelVal);
+        return 1;
+    }
+    else if(constante(&constanteVal)){
+        concatenaCodigo(val,"%s", constanteVal);
+        return 1;
     }
     return 0;
 }
@@ -1005,7 +1033,7 @@ int chamadaFuncao(){
 }
 
 int passagemParametros(){
-    if(E0(STRINGTEMP)){
+    if(E0(&STRINGTEMP)){
         pParametros();
     }
     return 1;
@@ -1014,13 +1042,14 @@ int passagemParametros(){
 int pParametros(){
     if(codToken == VIRGULA){
         analisadorLexico();
-        E0(STRINGTEMP);
+        E0(&STRINGTEMP);
         pParametros();
     }
 }
 
-int variavel(){
+int variavel(char **val){
     if(codToken == ID){
+        concatenaCodigo(val,"%s",token);
         analisadorLexico();
         return vetorFuncao();
     }
@@ -1082,9 +1111,10 @@ int inteiro(){
     return 0;
 }
 
-int constante(){
+int constante(char **val){
     if(codToken == CONSTINTEIRO || codToken == CONSTREAL ||
             codToken == VERDADEIRO || codToken == FALSO ||codToken == STRING){
+        concatenaCodigo(val,"%s",token);
         analisadorLexico();
         return 1;
     }
@@ -1092,7 +1122,8 @@ int constante(){
 }
 
 int listaVariaveis(){
-    if(variavel() == 1){
+    char *variavelVal="";
+    if(variavel(&variavelVal) == 1){
         lVariavel();
     }
     else{
@@ -1102,9 +1133,10 @@ int listaVariaveis(){
 }
 
 int lVariavel(){
+    char *variavelVal="";
     if(codToken == VIRGULA){
         analisadorLexico();
-        if(variavel() == 1){
+        if(variavel(&variavelVal) == 1){
             lVariavel();
         }
         else{
@@ -1115,22 +1147,28 @@ int lVariavel(){
     return 1;
 }
 
-int listaComandos(){
-    if (comando())
-        listaComandos();
+int listaComandos(char **val){
+    char *comandoVal="", *listaComandosVal="";
+    if (comando(&comandoVal))
+        listaComandos(&listaComandosVal);
+    concatenaCodigo(val,"%s%s", comandoVal, listaComandosVal);
     return 1;
 }
 
-int fimse(){
+int fimse(char **val){
+    char *listaComandosVal="";
     if(codToken == FIMSE){
         analisadorLexico();
+//        concatenaCodigo(val,"\n}");
     }
     else{
         if(codToken == SENAO){
             analisadorLexico();
-            listaComandos();
+            listaComandos(&listaComandosVal);
             if(codToken == FIMSE){
                 analisadorLexico();
+                concatenaCodigo(val,"\nelse{\n%s\n}\n", listaComandosVal);
+//                concatenaCodigo(val,"\n}\nelse{\n%s\n}\n", listaComandosVal);
             }
             else{
                 printf("Esperava fimse na linha %d\nencontrou %s\n", linha, token);
@@ -1145,16 +1183,29 @@ int fimse(){
     return 1;
 }
 
-int comando(){
-    int tVar = variavel();
+int passo(char **val){
+    char *inteiroVal="";
+    if(codToken == PASSO){
+        analisadorLexico();
+        inteiro(&inteiroVal);
+        concatenaCodigo(val,"%s",inteiro);
+    }
+
+}
+
+int comando(char **val){
+    char *listaComandosVal="", *variavelVal="", *E0Val="", *inteiroVal="", *fimseVal="", *passoVal="";
+    int tVar = variavel(&variavelVal);
     if(tVar>1){
         return 1;
     }
     else if(tVar == 1){
         if(codToken == ATRIBUICAO){
             analisadorLexico();
-            if(E0(STRINGTEMP))
+            if(E0(&E0Val)){
+                concatenaCodigo(val,"%s = %s;\n", variavelVal, E0Val);
                 return 1;
+            }
             else{
                 printf("Esperava expressao na linha %d\nencontrou %s\n", linha, token);
                 exit(0);
@@ -1205,11 +1256,12 @@ int comando(){
     }
     if(codToken == SE){
         analisadorLexico();
-        if(E0(STRINGTEMP)){
+        if(E0(&E0Val)){
             if(codToken == ENTAO){
                 analisadorLexico();
-                listaComandos();
-                fimse();
+                listaComandos(&listaComandosVal);
+                fimse(&fimseVal);
+                concatenaCodigo(val,"if %s{\n%s\n}%s",E0Val, listaComandosVal, fimseVal);
                 return 1;
             }
             else{
@@ -1224,10 +1276,11 @@ int comando(){
     }
     if(codToken == REPITA){
         analisadorLexico();
-        listaComandos();
+        listaComandos(&listaComandosVal);
         if(codToken == ATE){
             analisadorLexico();
-            E0(STRINGTEMP);
+            E0(&STRINGTEMP);
+            concatenaCodigo(val,"do{\n%swhile(!(%s))\n", listaComandosVal, E0Val);
             return 1;
         }
         else{
@@ -1237,8 +1290,8 @@ int comando(){
     }
     if(codToken == ENQUANTO){
         analisadorLexico();
-        if(E0(STRINGTEMP)){
-            listaComandos();
+        if(E0(&STRINGTEMP)){
+            listaComandos(&listaComandosVal);
             if(codToken == FIMENQUANTO){
                 analisadorLexico();
                 return 1;
@@ -1255,16 +1308,17 @@ int comando(){
     }
     if(codToken == PARA){
         analisadorLexico();
-        if(variavel() == 1){
+        if(variavel(&variavelVal) == 1){
             if(codToken == DE){
                 analisadorLexico();
-                if(inteiro()){
+                if(inteiro(&inteiroVal)){
                     if(codToken == ATE){
                         analisadorLexico();
-                        if(inteiro()){
+                        if(inteiro(&inteiroVal)){
+                            passo(&passoVal);
                             if(codToken == FACA){
                                 analisadorLexico();
-                                listaComandos();
+                                listaComandos(&listaComandosVal);
                                 if(codToken == FIMPARA){
                                     analisadorLexico();
                                     return 1;
@@ -1306,7 +1360,8 @@ int comando(){
     }
     if (codToken == RETORNE){
         analisadorLexico();
-        E0(STRINGTEMP);
+        E0(&E0Val);
+        concatenaCodigo(val,"return %s;",E0Val);
         return 1;
     }
     return 0;
@@ -1323,10 +1378,10 @@ int analisadorSintatico()
         var(&varVal);
         if(codToken == INICIO){
             analisadorLexico();
-            listaComandos();
+            listaComandos(&listaComandosVal);
             if(codToken == FIMALGORITMO){
-                concatenaCodigo(&codigoC, "%s%s%s%s%s%s","#include <stdio.h>\n#include <stdlib.h>\n",
-                                          nomeAlgoritmoVal, varVal, "int main(){\n", listaComandosVal, "}\n");
+                concatenaCodigo(&codigoC, "%s%s%s%s%s%s","#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n",
+                                          nomeAlgoritmoVal, varVal, "int main(){\n", listaComandosVal, "\n}\n");
             }
             else{
                 printf("Esperava palavra 'Fimalgoritmo' na linha %d\nencontrou %s\n", linha, token);
@@ -1414,5 +1469,6 @@ int main()
     fclose(arquivoSaida);
     fclose(arquivoEntrada);
     fclose(algoritmoSaida);
+    int teste = 10;
 //    getchar();
 }

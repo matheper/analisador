@@ -14,11 +14,21 @@ algoritmo "MeuAlgoritmo"
             var f:inteiro
             inicio
                 se n<=1
-                    entao retorne 1 + 2 * (4 - 5) ^ 3
+                    entao retorne -1 + 2 * (4 - 5) ^ 3
                     senao retorne a
                 fimse
         fimprocedimento
 inicio
     a <- 3
-    b <- a + b
+    b <- nao a + b
+    a <- -1 + 2 * (4 - 5) ^ 3
+    retorne teste + 2 / (4 --4)
+    repita
+        para i de 1 ate 10 passo 2 faca
+            a <- a + 1
+        fimpara
+        para i de 1 ate 10 faca
+            a <- a - 1
+        fimpara
+    ate nao -5 + 8
 fimalgoritmo
