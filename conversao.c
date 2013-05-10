@@ -1159,7 +1159,6 @@ int fimse(char **val){
     char *listaComandosVal="";
     if(codToken == FIMSE){
         analisadorLexico();
-//        concatenaCodigo(val,"\n}");
     }
     else{
         if(codToken == SENAO){
@@ -1168,7 +1167,6 @@ int fimse(char **val){
             if(codToken == FIMSE){
                 analisadorLexico();
                 concatenaCodigo(val,"\nelse{\n%s\n}\n", listaComandosVal);
-//                concatenaCodigo(val,"\n}\nelse{\n%s\n}\n", listaComandosVal);
             }
             else{
                 printf("Esperava fimse na linha %d\nencontrou %s\n", linha, token);
@@ -1361,7 +1359,7 @@ int comando(char **val){
     if (codToken == RETORNE){
         analisadorLexico();
         E0(&E0Val);
-        concatenaCodigo(val,"return %s;",E0Val);
+        concatenaCodigo(val,"return %s;\n",E0Val);
         return 1;
     }
     return 0;
