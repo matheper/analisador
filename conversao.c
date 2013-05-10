@@ -685,7 +685,7 @@ int listaParametros(char **val){
     if(codToken == PONTOEVIRGULA){
         analisadorLexico();
         parametros(&parametrosVal);
-        concatenaCodigo(val,"%s; %s", *val, parametrosVal);
+        concatenaCodigo(val,"%s, %s", *val, parametrosVal);
     }
     return 1;
 }

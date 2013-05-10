@@ -1,28 +1,29 @@
 algoritmo "MeuAlgoritmo"
-    var a,b,c:inteiro
-        f:real
+    var a,b,c,i:inteiro
         funcao fat(m:inteiro):real
             var f:inteiro
+                n:inteiro
             inicio
+                a <- 1
                 se n<=1
                     entao retorne 1 + 2 * (4 - 5) ^ 3
                     senao retorne a
                 fimse
         fimfuncao
         x,y: real
-        procedimento fat(a, b, c, m:inteiro; h, f, g:real)
-            var f:inteiro
+        procedimento teste(a, b, c, m:inteiro; h, f, g:real)
+            var n:inteiro
             inicio
                 se n<=1
-                    entao retorne -1 + 2 * (4 - 5) ^ 3
-                    senao retorne a
+                    entao a <- -1 + 2 * (4 - 5) ^ 3
+                    senao a <- 1
                 fimse
         fimprocedimento
 inicio
     a <- 3
-    b <- nao a + b
+    b <- 4
+    c <- a + b
     a <- -1 + 2 * (4 - 5) ^ 3
-    retorne teste + 2 / (4 --4)
     repita
         para i de 1 ate 10 passo 2 faca
             a <- a + 1
@@ -35,4 +36,5 @@ inicio
             b <- b + 1
         fimenquanto
     ate nao -5 + 8
+    retorne 2 / (4 --4)
 fimalgoritmo
