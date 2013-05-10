@@ -117,7 +117,7 @@ int pParametros();
 int variavel(char **val);
 int vetorFuncao();
 int tipoMatriz();
-int inteiro();
+int inteiro(char **val);
 int constante(char **val);
 int comando(char **val);
 int listaComandos(char **val);
@@ -911,7 +911,7 @@ int E3(char **val){
         analisadorLexico();
         E4(&E42Val);
     }
-    concatenaCodigo(val, "%s%s%s", opVal, E4Val, E42Val);
+    concatenaCodigo(val, "%s%s%s", E4Val, opVal, E42Val);
     return retorno;
 }
 
@@ -1057,9 +1057,10 @@ int variavel(char **val){
 }
 
 int vetorFuncao(){
+    char *inteiroVal="";
     if(codToken == ABRECOLCHETE){
         analisadorLexico();
-        if (inteiro()){
+        if (inteiro(&inteiroVal)){
             tipoMatriz();
             if(codToken == FECHACOLCHETE){
                 analisadorLexico();
@@ -1091,9 +1092,10 @@ int vetorFuncao(){
 }
 
 int tipoMatriz(){
+    char *inteiroVal="";
     if(codToken == VIRGULA){
         analisadorLexico();
-        if(inteiro())
+        if(inteiro(&inteiroVal))
             return 1;
         else{
             printf("Esperava valor inteiro na linha %d\nencontrou %s\n", linha, token);
@@ -1103,8 +1105,9 @@ int tipoMatriz(){
     return 1;
 }
 
-int inteiro(){
+int inteiro(char **val){
     if(codToken == CONSTINTEIRO || codToken == ID){
+        concatenaCodigo(val,"%s",token);
         analisadorLexico();
         return 1;
     }
@@ -1186,13 +1189,14 @@ int passo(char **val){
     if(codToken == PASSO){
         analisadorLexico();
         inteiro(&inteiroVal);
-        concatenaCodigo(val,"%s",inteiro);
+        concatenaCodigo(val,"%s",inteiroVal);
     }
+    concatenaCodigo(val,"1");
 
 }
 
 int comando(char **val){
-    char *listaComandosVal="", *variavelVal="", *E0Val="", *inteiroVal="", *fimseVal="", *passoVal="";
+    char *listaComandosVal="", *variavelVal="", *E0Val="", *inteiro1Val="", *inteiro2Val="", *fimseVal="", *passoVal="";
     int tVar = variavel(&variavelVal);
     if(tVar>1){
         return 1;
@@ -1259,7 +1263,7 @@ int comando(char **val){
                 analisadorLexico();
                 listaComandos(&listaComandosVal);
                 fimse(&fimseVal);
-                concatenaCodigo(val,"if %s{\n%s\n}%s",E0Val, listaComandosVal, fimseVal);
+                concatenaCodigo(val,"if (%s){\n%s\n}%s",E0Val, listaComandosVal, fimseVal);
                 return 1;
             }
             else{
@@ -1277,8 +1281,8 @@ int comando(char **val){
         listaComandos(&listaComandosVal);
         if(codToken == ATE){
             analisadorLexico();
-            E0(&STRINGTEMP);
-            concatenaCodigo(val,"do{\n%swhile(!(%s))\n", listaComandosVal, E0Val);
+            E0(&E0Val);
+            concatenaCodigo(val,"do{\n%s}while(!(%s));\n", listaComandosVal, E0Val);
             return 1;
         }
         else{
@@ -1288,15 +1292,22 @@ int comando(char **val){
     }
     if(codToken == ENQUANTO){
         analisadorLexico();
-        if(E0(&STRINGTEMP)){
-            listaComandos(&listaComandosVal);
-            if(codToken == FIMENQUANTO){
+        if(E0(&E0Val)){
+            if(codToken == FACA){
                 analisadorLexico();
-                return 1;
+                listaComandos(&listaComandosVal);
+                if(codToken == FIMENQUANTO){
+                    analisadorLexico();
+                    concatenaCodigo(val,"while(%s){\n%s}\n", E0Val, listaComandosVal);
+                    return 1;
+                }
+                else{
+                    printf("Esperava fimenquanto na linha %d\nencontrou %s\n", linha, token);
+                    exit(0);
+                }
             }
             else{
-                printf("Esperava fimenquanto na linha %d\nencontrou %s\n", linha, token);
-                exit(0);
+            printf("Esperava faca na linha %d\nencontrou %s\n", linha, token);
             }
         }
         else{
@@ -1309,16 +1320,19 @@ int comando(char **val){
         if(variavel(&variavelVal) == 1){
             if(codToken == DE){
                 analisadorLexico();
-                if(inteiro(&inteiroVal)){
+                if(inteiro(&inteiro1Val)){
                     if(codToken == ATE){
                         analisadorLexico();
-                        if(inteiro(&inteiroVal)){
+                        if(inteiro(&inteiro2Val)){
                             passo(&passoVal);
                             if(codToken == FACA){
                                 analisadorLexico();
                                 listaComandos(&listaComandosVal);
                                 if(codToken == FIMPARA){
                                     analisadorLexico();
+                                    concatenaCodigo(val,"for( %s = %s; %s < %s; %s += %s){\n%s}\n",
+                                                    variavelVal, inteiro1Val, variavelVal, inteiro2Val,
+                                                    variavelVal, passoVal, listaComandosVal);
                                     return 1;
                                 }
                                 else{
