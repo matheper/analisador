@@ -22,7 +22,13 @@ algoritmo "MeuAlgoritmo"
 inicio
     a <- 3
     b <- 4
+    x <- fat(b)
     c <- a + b
+    escreva(a)
+    leia(y)
+    escreva(fat(y))
+    leia(y, x)
+    escreva(y, fat(y))
     a <- -1 + 2 * (4 - 5) ^ 3
     repita
         para i de 1 ate 10 passo 2 faca
