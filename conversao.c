@@ -69,15 +69,19 @@
 #define STRING 61
 #define COMENT 62
 
+struct listaTipos{
+    struct listaTipos *next;
+    char *id;
+    char *tipo;
+}typedef LISTATIPOS;
+
 char token[TAM];
 int pos, codToken, linha=0;
-
 FILE *arquivoSaida, *arquivoEntrada, *algoritmoSaida;
 char s[TAM], codigo[TAM];
-
 char *codigoC = "";
-
 char *STRINGTEMP ="";
+LISTATIPOS *raiz = NULL;
 
 void concatenaCodigo(char **entrada, char *format, ...);
 int lerLinha();
@@ -128,6 +132,64 @@ int fimse(char **val);
 int passo(char **val);
 int analisadorSintatico();
 int main();
+
+int insereRegistro(LISTATIPOS **raiz, char *id, char *tipo){
+    LISTATIPOS *novo;
+    if(( novo = (LISTATIPOS *) malloc(sizeof(LISTATIPOS))) == NULL ){
+        puts( "Falta Memoria\n");
+        exit(0);
+    }
+    novo->id = id;
+    novo ->tipo = tipo;
+    novo->next = *raiz;
+    *raiz = novo;
+}
+
+int removeRegistro(LISTATIPOS **raiz, char *id){
+    if(*raiz != NULL && strcmp((*raiz)->id, id)){
+        return removeRegistro(&(*raiz)->next, id);
+    }
+    else if(*raiz!= NULL && !strcmp((*raiz)->id, id)){
+        LISTATIPOS *atual;
+        atual = *raiz;
+        *raiz = (*raiz)->next;
+        free(atual);
+        return 1;
+    }
+    return 0;
+}
+
+int popRegistro(LISTATIPOS **raiz){
+    if(*raiz == NULL) printf("\nA lista esta vazia\n");
+    else{
+        LISTATIPOS *atual;
+        atual = *raiz;
+
+        *raiz = (*raiz)->next;
+        free(atual);
+    }
+}
+
+char *encontraTipo(LISTATIPOS **raiz, char *id, char *tipo){
+    if(*raiz != NULL && strcmp((*raiz)->id, id)){
+        if ((*raiz)->next != NULL && !strlen(((*raiz)->next)->tipo)){
+            concatenaCodigo(&((*raiz)->next)->tipo, (*raiz)->tipo);
+        }
+        return encontraTipo(&(*raiz)->next, id, tipo);
+    }
+    else if(*raiz!= NULL && !strcmp((*raiz)->id, id)){
+        return (*raiz)->tipo;
+    }
+    return "";
+}
+
+char *listaRegistros(LISTATIPOS **raiz){
+    if(*raiz != NULL){
+        printf("%s\t%s\n", (*raiz)->id,(*raiz)->tipo);
+        return listaRegistros(&(*raiz)->next);
+    }
+    return "";
+}
 
 int lerLinha(){
     int i;
@@ -487,6 +549,7 @@ int listaIdentificadores(char **val){
             concatenaCodigo(&id, token);
             analisadorLexico();
             listaIdentificadores(&listaIdentificadoresS);
+            insereRegistro(&raiz, id, "");
             concatenaCodigo(val, ", %s%s",id, listaIdentificadoresS);
         }
         else{
@@ -599,7 +662,7 @@ int tipoVariavel(char **val){
     return 0;
 }
 
-declaracaoVariaveisFunc(){
+/*declaracaoVariaveisFunc(){
     if(codToken == ID){
         analisadorLexico();
         listaIdentificadores(&STRINGTEMP);
@@ -616,7 +679,7 @@ declaracaoVariaveisFunc(){
             exit(0);
         }
     }
-}
+}*/
 
 int declaracaoVariaveis(char **val){
     char *declaracaoVariaveisS="", *listaIdentificadoresVal="",
@@ -627,12 +690,15 @@ int declaracaoVariaveis(char **val){
         listaIdentificadores(&listaIdentificadoresVal);
         if(codToken == DOISPONTOS){
             analisadorLexico();
-            if (!tipoVariavel(&tipoVariavelVal)){
+            if (tipoVariavel(&tipoVariavelVal)){
+                insereRegistro(&raiz, id, tipoVariavelVal);
+                declaracaoVariaveis(&declaracaoVariaveisS);
+                concatenaCodigo(val, "%s%s%s%s%s", tipoVariavelVal, id, listaIdentificadoresVal, ";\n", declaracaoVariaveisS);
+            }
+            else{
                 printf("Esperava tipo na linha %d\nencontrou %s\n", linha, token);
                 exit(0);
             }
-            declaracaoVariaveis(&declaracaoVariaveisS);
-            concatenaCodigo(val, "%s%s%s%s%s", tipoVariavelVal, id, listaIdentificadoresVal, ";\n", declaracaoVariaveisS);
         }
         else{
             printf("Esperava dois pontos ou virgula na linha %d\nencontrou %s\n", linha, token);
@@ -677,6 +743,7 @@ int listaIdentificadoresTipoVariavel(char **val, char **tipoVariavelVal){
         printf("Esperava dois pontos ou virgula apos identificador na linha %d\nencontrou %s\n", linha, token);
         exit(0);
     }
+    insereRegistro(&raiz, id, *tipoVariavelVal);
     concatenaCodigo(val, ", %s%s%s", *tipoVariavelVal, id, listaIdentificadoresS);
     return 1;
 }
@@ -754,6 +821,7 @@ int funcao(char **val){
                 if(codToken == DOISPONTOS){
                     analisadorLexico();
                     tipoRetorno(&tipoRetornoVal);
+                    insereRegistro(&raiz, id, tipoRetornoVal);
                     var(&varVal);
                     if(codToken == INICIO){
                         analisadorLexico();
@@ -811,6 +879,7 @@ int procedimento(char **val){
                     listaComandos(&listaComandosVal);
                     if(codToken == FIMPROCEDIMENTO){
                         analisadorLexico();
+                        insereRegistro(&raiz, id, "void");
                         concatenaCodigo(val,"%s%s%s%s%s%s%s%s", "void ", id, "(", parametrosVal, "){\n", varVal, listaComandosVal, "\n}\n");
                         return 1;
                     }
@@ -1499,6 +1568,25 @@ int main()
     fclose(arquivoSaida);
     fclose(arquivoEntrada);
     fclose(algoritmoSaida);
-    int teste = 10;
+/*    LISTATIPOS *raiz = NULL;
+    insereRegistro(&raiz, "id1", "tipo1");
+    insereRegistro(&raiz, "id2", "tipo2");
+    insereRegistro(&raiz, "id3", "tipo3");
+    insereRegistro(&raiz, "id4", "tipo4");
+    insereRegistro(&raiz, "id5", "tipo5");
+    insereRegistro(&raiz, "id6", "tipo6");
+    removeRegistro(&raiz, "id3");
+    popRegistro(&raiz);
+    printf("%s\n",encontraTipo(&raiz, "id1"));
+    printf("%s\n",encontraTipo(&raiz, "id2"));
+    printf("%s\n",encontraTipo(&raiz, "id3"));
+    printf("%s\n",encontraTipo(&raiz, "id4"));
+    printf("%s\n",encontraTipo(&raiz, "id5"));
+    printf("%s\n",encontraTipo(&raiz, "id6"));*/
+    printf("%s\n",encontraTipo(&raiz, "c", ""));
+    printf("%s\n",encontraTipo(&raiz, "y", ""));
+    printf("%s\n",encontraTipo(&raiz, "i", ""));
+    printf("%s\n\n\n",encontraTipo(&raiz, "b", ""));
+    listaRegistros(&raiz);
 //    getchar();
 }

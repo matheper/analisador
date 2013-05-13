@@ -22,7 +22,7 @@ algoritmo "MeuAlgoritmo"
 inicio
     a <- 3
     b <- 4
-    x <- fat(b)
+    x <- fat(b, a + 4)
     c <- a + b
     escreva(a)
     leia(y)
