@@ -117,8 +117,8 @@ int E6(char **val);
 int E7(char **val);
 int termo(char **val);
 int chamadaFuncao(char **val);
-int passagemParametros(char **val);
-int pParametros(char **val);
+int passagemParametros(char **val, char **formato);
+int pParametros(char **val, char **formato);
 int variavel(char **val);
 int vetorFuncao(char **val);
 int tipoMatriz();
@@ -127,7 +127,7 @@ int constante(char **val);
 int comando(char **val);
 int listaComandos(char **val);
 int comandos();
-int listaVariaveis(char **val);
+int listaVariaveis(char **val, char **formato);
 int fimse(char **val);
 int passo(char **val);
 int analisadorSintatico();
@@ -170,12 +170,12 @@ int popRegistro(LISTATIPOS **raiz){
     }
 }
 
-char *encontraTipo(LISTATIPOS **raiz, char *id, char *tipo){
+char *encontraTipo(LISTATIPOS **raiz, char *id){
     if(*raiz != NULL && strcmp((*raiz)->id, id)){
         if ((*raiz)->next != NULL && !strlen(((*raiz)->next)->tipo)){
             concatenaCodigo(&((*raiz)->next)->tipo, (*raiz)->tipo);
         }
-        return encontraTipo(&(*raiz)->next, id, tipo);
+        return encontraTipo(&(*raiz)->next, id);
     }
     else if(*raiz!= NULL && !strcmp((*raiz)->id, id)){
         return (*raiz)->tipo;
@@ -1090,7 +1090,7 @@ int chamadaFuncao(char **val){
     char *passagemParametrosVal="";
     if(codToken == ABREPAR){
         analisadorLexico();
-        passagemParametros(&passagemParametrosVal);
+        passagemParametros(&passagemParametrosVal, &STRINGTEMP);
         if(codToken == FECHAPAR){
             analisadorLexico();
             concatenaCodigo(val,"(%s)", passagemParametrosVal);
@@ -1104,22 +1104,24 @@ int chamadaFuncao(char **val){
     return 1;
 }
 
-int passagemParametros(char **val){
-    char *E0Val="", *pParametrosVal="";
+int passagemParametros(char **val, char **formato){
+    char *E0Val="", *pParametrosVal="", *pParametrosFormato="";
     if(E0(&E0Val)){
-        pParametros(&pParametrosVal);
+        pParametros(&pParametrosVal, &pParametrosFormato);
     }
     concatenaCodigo(val,"%s%s",E0Val, pParametrosVal);
+    concatenaCodigo(formato, "%s%s", "%f", pParametrosFormato);
     return 1;
 }
 
-int pParametros(char **val){
-    char *E0Val="", *pParametrosVal="";
+int pParametros(char **val, char **formato){
+    char *E0Val="", *pParametrosVal="", *pParametrosFormato="";
     if(codToken == VIRGULA){
         analisadorLexico();
         E0(&E0Val);
-        pParametros(&pParametrosVal);
+        pParametros(&pParametrosVal, &pParametrosFormato);
         concatenaCodigo(val,", ");
+        concatenaCodigo(formato,"%s%s","%f", pParametrosFormato);
     }
     concatenaCodigo(val,"%s%s%s", *val, E0Val, pParametrosVal);
 }
@@ -1159,7 +1161,7 @@ int vetorFuncao(char **val){
     }
     else if(codToken == ABREPAR){
         analisadorLexico();
-        passagemParametros(&passagemParametrosVal);
+        passagemParametros(&passagemParametrosVal, &STRINGTEMP);
         if(codToken == FECHAPAR){
             analisadorLexico();
             concatenaCodigo(val,"(%s)", passagemParametrosVal);
@@ -1206,11 +1208,14 @@ int constante(char **val){
     return 0;
 }
 
-int listaVariaveis(char **val){
-    char *variavelVal="", *lVariavelVal="";
+int listaVariaveis(char **val, char **formato){
+    char *variavelVal="", *lVariavelVal="", *lVariavelFormato="";
     if(variavel(&variavelVal) == 1){
-        lVariavel();
+        lVariavel(&lVariavelVal, &lVariavelFormato);
         concatenaCodigo(val,"%s%s", variavelVal, lVariavelVal);
+        if (!strcmp(encontraTipo(&raiz, variavelVal), "float "))
+                concatenaCodigo(formato, "%s%s", "%f", lVariavelFormato);
+        else    concatenaCodigo(formato, "%s%s", "%d", lVariavelFormato);
     }
     else{
         printf("Esperava variavel na linha %d\nencontrou %s\n", linha, token);
@@ -1218,12 +1223,16 @@ int listaVariaveis(char **val){
     }
 }
 
-int lVariavel(){
-    char *variavelVal="";
+int lVariavel(char **val, char **formato){
+    char *variavelVal="", *lVariavelVal="", *lVariavelFormato="";
     if(codToken == VIRGULA){
         analisadorLexico();
         if(variavel(&variavelVal) == 1){
-            lVariavel();
+            lVariavel(&lVariavelVal, &lVariavelFormato);
+            concatenaCodigo(val,"%s, %s%s", *val, variavelVal, lVariavelVal);
+            if (!strcmp(encontraTipo(&raiz, variavelVal), "float "))
+                    concatenaCodigo(formato,"%s%s%s", *formato,"%f", lVariavelFormato);
+            else    concatenaCodigo(formato,"%s%s%s", *formato,"%d", lVariavelFormato);
         }
         else{
             printf("Esperava variavel na linha %d\nencontrou %s\n", linha, token);
@@ -1307,7 +1316,7 @@ int comando(char **val){
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
-            listaVariaveis(&listaVariaveisVal);
+            listaVariaveis(&listaVariaveisVal, &formatoVal);
             if(codToken == FECHAPAR){
                 analisadorLexico();
                 concatenaCodigo(val,"scanf(\"%s\", %s);\n", formatoVal, listaVariaveisVal);
@@ -1327,7 +1336,7 @@ int comando(char **val){
         analisadorLexico();
         if(codToken == ABREPAR){
             analisadorLexico();
-            passagemParametros(&passagemParametrosVal);
+            passagemParametros(&passagemParametrosVal, &formatoVal);
             if(codToken == FECHAPAR){
                 analisadorLexico();
                 concatenaCodigo(val,"printf(\"%s\", %s);\n", formatoVal, passagemParametrosVal);
@@ -1500,24 +1509,6 @@ int analisadorSintatico()
     return 1;
 }
 
-/*
-char *concatenaCodigo(char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int n = vsnprintf(NULL, 0, format, args) + 1;  // Note the +1!
-    va_end(args);                                  // vsnprintf() 'uses up' args
-    char *newString = (char *) malloc(n);
-    if (newString != 0)
-    {
-        va_start(args, format);                        // Restart args
-        vsprintf(newString, format, args);
-        va_end(args);
-    }
-    return newString;
-}
-*/
-
 void concatenaCodigo(char **entrada, char *format, ...)
 {
     va_list args;
@@ -1583,10 +1574,6 @@ int main()
     printf("%s\n",encontraTipo(&raiz, "id4"));
     printf("%s\n",encontraTipo(&raiz, "id5"));
     printf("%s\n",encontraTipo(&raiz, "id6"));*/
-    printf("%s\n",encontraTipo(&raiz, "c", ""));
-    printf("%s\n",encontraTipo(&raiz, "y", ""));
-    printf("%s\n",encontraTipo(&raiz, "i", ""));
-    printf("%s\n\n\n",encontraTipo(&raiz, "b", ""));
-    listaRegistros(&raiz);
+//    listaRegistros(&raiz);
 //    getchar();
 }

@@ -1,24 +1,24 @@
 algoritmo "MeuAlgoritmo"
-    var a,b,c,i:inteiro
-        funcao fat(m:inteiro):real
-            var f:inteiro
-                n:inteiro
-            inicio
-                a <- 1
-                se n<=1
-                    entao retorne 1 + 2 * (4 - 5) ^ 3
-                    senao retorne a
-                fimse
-        fimfuncao
-        x,y: real
-        procedimento teste(a, b, c, m:inteiro; h, f, g:real)
-            var n:inteiro
-            inicio
-                se n<=1
-                    entao a <- -1 + 2 * (4 - 5) ^ 3
-                    senao a <- 1
-                fimse
-        fimprocedimento
+var a,b,c,i:inteiro
+    funcao fat(m:inteiro):real
+        var f:inteiro
+            n:inteiro
+        inicio
+            a <- 1
+            se n<=1
+                entao retorne 1 + 2 * (4 - 5) ^ 3
+                senao retorne a
+            fimse
+    fimfuncao
+    x,y: real
+    procedimento teste(j, k, l, n:inteiro; h, f, g:real)
+        var n:inteiro
+        inicio
+            se n<=1
+                entao a <- -1 + 2 * (4 - 5) ^ 3
+                senao a <- 1
+            fimse
+    fimprocedimento
 inicio
     a <- 3
     b <- 4
@@ -27,7 +27,7 @@ inicio
     escreva(a)
     leia(y)
     escreva(fat(y))
-    leia(y, x)
+    leia(y, x, b)
     escreva(y, fat(y))
     a <- -1 + 2 * (4 - 5) ^ 3
     repita
