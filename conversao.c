@@ -1212,7 +1212,7 @@ int listaVariaveis(char **val, char **formato){
     char *variavelVal="", *lVariavelVal="", *lVariavelFormato="";
     if(variavel(&variavelVal) == 1){
         lVariavel(&lVariavelVal, &lVariavelFormato);
-        concatenaCodigo(val,"%s%s", variavelVal, lVariavelVal);
+        concatenaCodigo(val,"&%s%s", variavelVal, lVariavelVal);
         if (!strcmp(encontraTipo(&raiz, variavelVal), "float "))
                 concatenaCodigo(formato, "%s%s", "%f", lVariavelFormato);
         else    concatenaCodigo(formato, "%s%s", "%d", lVariavelFormato);
@@ -1229,7 +1229,7 @@ int lVariavel(char **val, char **formato){
         analisadorLexico();
         if(variavel(&variavelVal) == 1){
             lVariavel(&lVariavelVal, &lVariavelFormato);
-            concatenaCodigo(val,"%s, %s%s", *val, variavelVal, lVariavelVal);
+            concatenaCodigo(val,"%s, &%s%s", *val, variavelVal, lVariavelVal);
             if (!strcmp(encontraTipo(&raiz, variavelVal), "float "))
                     concatenaCodigo(formato,"%s%s%s", *formato,"%f", lVariavelFormato);
             else    concatenaCodigo(formato,"%s%s%s", *formato,"%d", lVariavelFormato);
@@ -1283,7 +1283,7 @@ int passo(char **val){
         inteiro(&inteiroVal);
         concatenaCodigo(val,"%s",inteiroVal);
     }
-    concatenaCodigo(val,"1");
+    else concatenaCodigo(val,"1");
 
 }
 
@@ -1426,7 +1426,7 @@ int comando(char **val){
                                 listaComandos(&listaComandosVal);
                                 if(codToken == FIMPARA){
                                     analisadorLexico();
-                                    concatenaCodigo(val,"for( %s = %s; %s < %s; %s += %s){\n%s}\n",
+                                    concatenaCodigo(val,"for( %s = %s; %s <= %s; %s += %s){\n%s}\n",
                                                     variavelVal, inteiro1Val, variavelVal, inteiro2Val,
                                                     variavelVal, passoVal, listaComandosVal);
                                     return 1;
@@ -1527,13 +1527,12 @@ void concatenaCodigo(char **entrada, char *format, ...)
 
 int main()
 {   
-    char *saida = "saida.lex", algoritmoC[FILENAME_MAX], entrada[FILENAME_MAX];
+    char *saida = "saida.lex", *algoritmoC = "", entrada[FILENAME_MAX];
 
-    strcpy (entrada, "algoritmo");
-//    printf("Digite nome do arquivo de entrada: ");
-//    scanf("%s", &entrada);
-    strcpy (algoritmoC, entrada);
-    strcat (algoritmoC, ".c");
+//    strcpy (entrada, "algoritmo");
+    printf("Digite nome do arquivo de entrada: ");
+    scanf("%s", entrada);
+    concatenaCodigo(&algoritmoC, "%s%s", entrada, ".c");
 
     if((arquivoEntrada = fopen(entrada, "r"))==NULL){
         printf("\nErro ao abrir arquivo de entrada: %s\n", entrada);
